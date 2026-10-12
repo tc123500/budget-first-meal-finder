@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Budget-first Meal Finder - Prototype</title>
+<style>
+:root{--ink:#111;--mid:#6b6b6b;--line:#bdbdbd;--fill:#efefef;--acc:#2b2b2b;--accl:#d9d9d9;--bg:#f6f8fa}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:"Helvetica Neue",Arial,"Liberation Sans",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.stage{display:flex;gap:40px;align-items:center}
+.side{max-width:240px;font-size:13px;color:var(--mid);line-height:1.5}
+.side h1{font-size:18px;color:var(--ink);margin-bottom:8px}
+.side ol{padding-left:18px;margin:10px 0}
+.side button{margin-top:8px;font:inherit;font-size:12px;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+.phone{width:390px;height:844px;background:#fff;border:3px solid #8a94a0;border-radius:36px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.status{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 0;font-size:12px;font-weight:700}
+.battery{width:34px;height:12px;border:1.5px solid var(--mid);border-radius:3px}
+.screen{flex:1;display:none;flex-direction:column;padding:24px 20px 20px;overflow-y:auto}
+.screen.on{display:flex}
+h2{font-size:20px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:14px}
+.back{background:none;border:0;font-size:24px;cursor:pointer;line-height:1;padding:0 4px 3px 0;color:var(--ink)}
+.label{font-size:13px;font-weight:700;color:var(--mid);margin:18px 0 8px}
+.sub{font-size:16px;color:var(--mid)}
+.big{background:var(--fill);border:1.5px solid var(--line);border-radius:16px;padding:18px 20px;margin-top:12px}
+.amt{font-size:52px;font-weight:700;text-align:center;letter-spacing:-1px}
+input[type=range]{width:100%;accent-color:var(--acc);margin-top:6px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.chip.on{background:var(--accl);border-color:var(--acc);font-weight:700}
+.tip{background:#e6e6e6;border:1.5px solid var(--acc);border-radius:12px;padding:12px 14px;font-size:12px;color:#4a4a4a;margin-top:20px;line-height:1.5}
+.tip b{display:block;font-size:13px}
+.btn{width:100%;border:2px solid var(--acc);background:var(--acc);color:#fff;border-radius:12px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn.sec{background:#fff;color:var(--acc)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.row{display:flex;gap:12px}
+.spacer{flex:1}
+.note{text-align:center;font-size:11px;color:var(--mid);margin-top:12px}
+.card{border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;background:#fff;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .top{display:flex;gap:12px}
+.thumb{width:62px;height:62px;flex:none;background:linear-gradient(to top right,transparent calc(50% - .75px),var(--line) calc(50% - .75px),var(--line) calc(50% + .75px),transparent calc(50% + .75px)),linear-gradient(to bottom right,transparent calc(50% - .75px),var(--line) calc(50% - .75px),var(--line) calc(50% + .75px),transparent calc(50% + .75px)),var(--fill);border:1.5px solid var(--line);border-radius:10px;position:relative;overflow:hidden}
+.info{flex:1;min-width:0}
+.nm{font-size:15px;font-weight:700}.pl{font-size:12px;color:var(--mid);margin-top:2px}
+.pr{text-align:right}.pr b{font-size:17px;display:block}.pr span{font-size:11px;color:var(--mid)}
+.badge{display:inline-block;margin-top:8px;border:1.5px solid #4a4a4a;background:#e6e6e6;color:#4a4a4a;border-radius:13px;padding:4px 14px;font-size:12px;font-weight:700}
+.badge.pricey{background:#fff;border-style:dashed}
+.meter{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mid);margin-top:10px}
+.bar{height:10px;border-radius:5px;background:var(--fill);border:1px solid var(--line);flex:0 0 90px;overflow:hidden}
+.bar i{display:block;height:100%;background:#4a4a4a}
+.link{margin-left:auto;font-weight:700;color:var(--ink);background:none;border:0;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.hero{height:150px;background:linear-gradient(to top right,transparent calc(50% - .75px),var(--line) calc(50% - .75px),var(--line) calc(50% + .75px),transparent calc(50% + .75px)),linear-gradient(to bottom right,transparent calc(50% - .75px),var(--line) calc(50% - .75px),var(--line) calc(50% + .75px),transparent calc(50% + .75px)),var(--fill);border:1.5px solid var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--mid);font-size:14px;position:relative;overflow:hidden}
+.hero span{position:relative;background:var(--fill);padding:0 6px;z-index:1}
+.cmp{display:grid;grid-template-columns:54px 1fr 54px;gap:8px 10px;align-items:center;font-size:12px;color:var(--mid)}
+.cmp b{color:var(--ink);text-align:right}
+.cmp .t{height:12px;border-radius:6px;background:var(--fill);border:1px solid var(--line);overflow:hidden}
+.cmp .t i{display:block;height:100%;background:var(--acc);border-radius:6px;transition:width .4s}
+.cmp .t.ty i{background:var(--line)}
+.box{background:var(--fill);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12px}
+.empty{text-align:center;color:var(--mid);padding:40px 10px;font-size:14px;line-height:1.6}
+.empty .btn{margin-top:18px}
+.toast{position:absolute;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--acc);color:#fff;padding:10px 16px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.alt .save{font-size:12px;font-weight:700;color:#4a4a4a;margin-top:2px}
+.alt .why{font-size:12px;color:var(--mid);margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.alt .swap{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.done{text-align:center;padding-top:80px}
+.done .tick{width:72px;height:72px;border:3px solid var(--acc);border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:34px}
+.done p{color:var(--mid);font-size:14px;margin:6px 0}
+@media(max-width:760px){body{padding:0;display:block}.side{display:none}.stage{display:block}.phone{width:100%;height:100vh;height:100dvh;border:0;border-radius:0}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="side">
+    <h1>Budget-first meal finder</h1>
+    Low-fidelity interactive prototype. All prices and places are sample data.
+    <ol><li>Set a meal budget</li><li>Compare value across options</li><li>Open one to see why</li><li>Reject and swap in two taps</li></ol>
+    <button id="reset">Restart prototype</button>
+  </aside>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span class="battery"></span></div>
+
+    <section class="screen on" id="s1">
+      <h2>Find a meal</h2>
+      <div class="sub">What is your meal budget?</div>
+      <div class="big"><div class="amt" id="amt">HK$ 40</div><input type="range" id="slider" min="10" max="80" step="1" value="40" aria-label="Meal budget"></div>
+      <div class="label">Quick picks</div>
+      <div class="chips" id="quick"></div>
+      <div class="label">Craving something? (optional)</div>
+      <div class="chips" id="crave"></div>
+      <div class="tip"><b>Tip: we only show options inside your budget</b>so you never have to guess if you can afford it.</div>
+      <div class="spacer"></div>
+      <button class="btn" id="go">Show options</button>
+      <div class="note">Sample data for prototype</div>
+    </section>
+
+    <section class="screen" id="s2">
+      <h2><button class="back" data-back="s1" aria-label="Back">‹</button><span id="s2t">Under HK$40</span></h2>
+      <div class="chips" id="sort" style="margin-bottom:12px"></div>
+      <div class="note" style="text-align:left;margin:0 0 10px" id="cnt"></div>
+      <div id="list"></div>
+    </section>
+
+    <section class="screen" id="s3">
+      <h2><button class="back" data-back="s2" aria-label="Back">‹</button><span id="d_nm"></span></h2>
+      <div class="hero"><span>Photo</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+        <span class="pl" id="d_pl" style="font-size:13px"></span><b style="font-size:24px" id="d_pr"></b></div>
+      <div id="d_badge"></div>
+      <div class="label" style="color:var(--ink);font-size:14px">Price vs typical</div>
+      <div class="cmp">
+        <span>This</span><div class="t"><i id="d_b1"></i></div><b id="d_p1"></b>
+        <span>Typical</span><div class="t ty"><i id="d_b2" style="width:100%"></i></div><b id="d_p2"></b>
+      </div>
+      <div id="d_diff" style="font-size:12px;font-weight:700;margin-top:10px"></div>
+      <div class="label" style="color:var(--ink);font-size:14px">Will it fill me up?</div>
+      <div class="box"><div class="meter" style="margin:0 0 10px"><span>Fullness</span><div class="bar" style="flex-basis:120px"><i id="d_f"></i></div></div><span id="d_pt"></span></div>
+      <div class="label" style="color:var(--ink);font-size:14px">Why it is worth it</div>
+      <ul id="d_why" style="font-size:12px;padding-left:16px;line-height:1.7"></ul>
+      <div class="spacer"></div>
+      <div class="row" style="margin-top:16px"><button class="btn sec" id="rej">Not this one</button><button class="btn" id="take">I'll take it</button></div>
+    </section>
+
+    <section class="screen" id="s4">
+      <h2><button class="back" data-back="s3" aria-label="Back">‹</button>Not this one?</h2>
+      <div class="label" style="margin-top:0">Why not? (optional)</div>
+      <div class="chips" id="why"></div>
+      <div class="box" style="margin:14px 0"><b style="font-size:13px" id="sk"></b><br><span style="color:var(--mid)" id="skd"></span></div>
+      <div id="alts"></div>
+      <div class="spacer"></div>
+      <button class="link" id="raise" style="margin:6px auto;display:none"></button>
+    </section>
+
+    <section class="screen" id="s5">
+      <div class="done"><div class="tick">✓</div><h2 style="justify-content:center" id="f_t"></h2><p id="f_p"></p><p>Sample confirmation for the prototype.</p>
+      <div style="margin-top:36px"><button class="btn" id="again">Find another meal</button></div></div>
+    </section>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+<script>
+const FOOD=[
+{id:1,n:"Roast pork rice",pl:"Canteen A",c:"Rice",p:32,t:38,f:.85,pt:"Large rice portion + 3 pieces of meat"},
+{id:2,n:"Chicken rice (half)",pl:"Canteen A",c:"Rice",p:26,t:32,f:.75,pt:"Same rice portion, less meat"},
+{id:3,n:"Curry fish ball rice",pl:"Canteen B",c:"Rice",p:28,t:32,f:.7,pt:"Medium rice + 6 fish balls"},
+{id:4,n:"Veggie egg rice",pl:"Canteen B",c:"Rice",p:22,t:28,f:.6,pt:"Medium rice + egg + vegetables"},
+{id:5,n:"Fried noodles + tea",pl:"Cafe near gate",c:"Noodles",p:36,t:35,f:.7,pt:"Medium noodles + hot drink"},
+{id:6,n:"Fried noodles",pl:"Cafe near gate",c:"Noodles",p:25,t:32,f:.7,pt:"Medium noodle portion"},
+{id:7,n:"Wonton noodles",pl:"Noodle shop",c:"Noodles",p:34,t:40,f:.65,pt:"4 wontons + thin noodles"},
+{id:8,n:"Instant cup noodles",pl:"Convenience store",c:"Noodles",p:9,t:12,f:.4,pt:"Small cup, low fullness"},
+{id:9,n:"Egg sandwich set",pl:"Snack stall",c:"Snack",p:24,t:30,f:.45,pt:"Sandwich + small drink"},
+{id:10,n:"Fried chicken cutlet",pl:"Snack stall",c:"Snack",p:28,t:30,f:.5,pt:"One large cutlet"},
+{id:11,n:"Sushi roll set",pl:"Sushi counter",c:"Snack",p:30,t:36,f:.5,pt:"6 rolls"},
+{id:12,n:"Milk tea + bun",pl:"Cafe near gate",c:"Drink",p:20,t:26,f:.4,pt:"Regular milk tea + pineapple bun"}
+];
+const $=s=>document.querySelector(s);
+const S={budget:40,crave:new Set(),sort:"All",cur:null,reason:"Too pricey",from:null};
+const val=f=>f.p/f.t<=.8?["Good value",""]:f.p/f.t<=1?["Fair price",""]:["Pricey","pricey"];
+function go(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id));$("#"+id).scrollTop=0}
+function chips(el,items,on,fn){el.innerHTML="";items.forEach(([l,k])=>{const b=document.createElement("button");b.className="chip"+(on(k)?" on":"");b.textContent=l;b.onclick=()=>fn(k);el.appendChild(b)})}
+function matches(){let a=FOOD.filter(f=>f.p<=S.budget&&(!S.crave.size||S.crave.has(f.c)));
+ if(S.sort==="Best value")a.sort((x,y)=>x.p/x.t-y.p/y.t);else if(S.sort==="Filling")a=a.filter(f=>f.f>=.7).sort((x,y)=>y.f-x.f);else a.sort((x,y)=>x.p/x.t-y.p/y.t);return a}
+function drawS1(){$("#amt").textContent="HK$ "+S.budget;$("#slider").value=S.budget;
+ chips($("#quick"),[20,30,40,60].map(v=>["HK$"+v,v]),k=>k===S.budget,k=>{S.budget=k;drawS1()});
+ chips($("#crave"),["Rice","Noodles","Snack","Drink"].map(v=>[v,v]),k=>S.crave.has(k),k=>{S.crave.has(k)?S.crave.delete(k):S.crave.add(k);drawS1()});
+ const n=matches().length;$("#go").textContent=n?`Show options (${n} found)`:"Nothing in budget - raise it";$("#go").disabled=!n}
+function card(f,alt){const[v,vc]=val(f);return `<div class="card" data-id="${f.id}"><div class="top"><div class="thumb"></div><div class="info"><div class="nm">${f.n}</div><div class="pl">${f.pl}</div><span class="badge ${vc}">${v}</span></div><div class="pr"><b>HK$${f.p}</b><span>typical HK$${f.t}</span></div></div><div class="meter"><span>Fullness</span><div class="bar"><i style="width:${f.f*100}%"></i></div><button class="link" data-rej="${f.id}">Not this ›</button></div></div>`}
+function drawS2(){$("#s2t").textContent="Under HK$"+S.budget;
+ chips($("#sort"),["All","Best value","Filling"].map(v=>[v,v]),k=>k===S.sort,k=>{S.sort=k;drawS2()});
+ const a=matches();$("#cnt").textContent=`${a.length} option${a.length===1?"":"s"} · sorted by ${S.sort==="Filling"?"fullness":"value"}`;
+ $("#list").innerHTML=a.length?a.map(f=>card(f)).join(""):`<div class="empty">Nothing under HK$${S.budget} here.<br>Raise your budget by HK$5 to see more.<button class="btn" id="r5">Raise budget by HK$5</button></div>`;
+ const r=$("#r5");if(r)r.onclick=()=>{S.budget+=5;drawS2();drawS1()}}
+function open(id){S.cur=FOOD.find(f=>f.id==id);const f=S.cur,[v,vc]=val(f),d=f.t-f.p;
+ $("#d_nm").textContent=f.n;$("#d_pl").textContent=f.pl;$("#d_pr").textContent="HK$"+f.p;
+ $("#d_badge").innerHTML=`<span class="badge ${vc}">${v}</span>`;
+ $("#d_p1").textContent="HK$"+f.p;$("#d_p2").textContent="HK$"+f.t;
+ $("#d_b1").style.width="0";requestAnimationFrame(()=>requestAnimationFrame(()=>$("#d_b1").style.width=Math.min(100,f.p/Math.max(f.p,f.t)*100)+"%"));
+ $("#d_b2").style.width=(f.t/Math.max(f.p,f.t)*100)+"%";
+ $("#d_diff").textContent=d>0?`HK$${d} below typical for campus-area ${f.c.toLowerCase()} options`:d===0?"Same as typical price":`HK$${-d} above typical for campus-area ${f.c.toLowerCase()} options`;
+ $("#d_f").style.width=f.f*100+"%";$("#d_pt").textContent=f.pt;
+ const w=[];w.push(d>0?`Cheaper than similar ${f.c.toLowerCase()} options`:"Priced about the same as similar options");
+ w.push(f.f>=.7?"Big portion for the price":f.f>=.5?"Fair portion for the price":"Light portion - best as a cheap top-up");
+ if(f.p<=S.budget*.8)w.push("Leaves room in your budget");
+ $("#d_why").innerHTML=w.map(x=>`<li>${x}</li>`).join("");go("s3")}
+function drawS4(){const f=S.cur;
+ chips($("#why"),["Too pricey","Not filling","Not in the mood"].map(v=>[v,v]),k=>k===S.reason,k=>{S.reason=k;drawS4()});
+ $("#sk").textContent=`Skipped: ${f.n} HK$${f.p}`;
+ let a=FOOD.filter(x=>x.id!==f.id),why;
+ if(S.reason==="Too pricey"){a=a.filter(x=>x.p<f.p&&x.f>=f.f-.2).sort((x,y)=>Math.abs(x.f-f.f)-Math.abs(y.f-f.f)||y.p-x.p);$("#skd").textContent="Showing cheaper options with a similar portion";
+  why=x=>[`HK$${f.p-x.p} cheaper`,x.c===f.c?"same "+x.c.toLowerCase()+" type, "+(x.f>=f.f?"similar portion":"slightly lighter"):"similar fullness, different style"]}
+ else if(S.reason==="Not filling"){a=a.filter(x=>x.f>f.f&&x.p<=S.budget).sort((x,y)=>x.p-y.p);$("#skd").textContent="Showing fuller options within your budget";
+  why=x=>[x.p>f.p?`HK$${x.p-f.p} more`:`HK$${f.p-x.p} cheaper`,"fuller portion within budget"]}
+ else{a=a.filter(x=>x.c!==f.c&&x.p<=S.budget).sort((x,y)=>Math.abs(x.p-f.p)-Math.abs(y.p-f.p));$("#skd").textContent="Showing different food types at a similar price";
+  why=x=>[x.p>f.p?`HK$${x.p-f.p} more`:x.p===f.p?"same price":`HK$${f.p-x.p} cheaper`,"different from what you skipped"]}
+ a=a.slice(0,2);
+ $("#alts").innerHTML=a.length?a.map(x=>{const[s,r]=why(x);return `<div class="card alt" style="cursor:default"><div class="top"><div class="thumb" style="width:52px;height:52px"></div><div class="info"><div class="nm">${x.n}</div><div class="save">${s}</div><div class="meter" style="margin-top:4px"><span>Fullness</span><div class="bar" style="flex-basis:70px"><i style="width:${x.f*100}%"></i></div></div></div><div class="pr"><b>HK$${x.p}</b></div></div><div class="why"><span>Why this: ${r}</span><button class="swap" data-swap="${x.id}">Swap to this</button></div></div>`}).join(""):`<div class="empty">${S.reason==="Too pricey"?"This is already one of the cheapest options.<br>Try a different reason above, or raise your budget.":"No close match inside HK$"+S.budget+"."}</div>`;
+ const rb=$("#raise");rb.style.display="block";rb.textContent="Nothing close? Raise budget by HK$5 ›";}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
+document.addEventListener("click",e=>{
+ const c=e.target.closest(".card[data-id]"),rj=e.target.closest("[data-rej]"),sw=e.target.closest("[data-swap]"),bk=e.target.closest("[data-back]");
+ if(rj){e.stopPropagation();S.cur=FOOD.find(f=>f.id==rj.dataset.rej);S.reason="Too pricey";drawS4();go("s4");return}
+ if(c){open(c.dataset.id);return}
+ if(sw){open(sw.dataset.swap);toast("Swapped");return}
+ if(bk){go(bk.dataset.back)}
+});
+$("#slider").oninput=e=>{S.budget=+e.target.value;drawS1()};
+$("#go").onclick=()=>{if(matches().length){drawS2();go("s2")}};
+$("#rej").onclick=()=>{S.reason="Too pricey";drawS4();go("s4")};
+$("#take").onclick=()=>{const f=S.cur,d=f.t-f.p;$("#f_t").textContent=`${f.n} - HK$${f.p}`;$("#f_p").textContent=d>0?`You spend HK$${d} less than the typical price.`:"You pay about the typical price.";go("s5")};
+$("#raise").onclick=()=>{S.budget+=5;drawS4();drawS1();toast("Budget now HK$"+S.budget)};
+$("#again").onclick=$("#reset").onclick=()=>{S.budget=40;S.crave.clear();S.sort="All";drawS1();go("s1")};
+drawS1();
+</script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  const DEFAULT_LINE_HEIGHT = 16;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  const PICK_CAPABILITIES = ["pick"];
+  const PICK_CHAIN_LENGTH = 4;
+  const PICK_MAX_TEXT_CHARS = 120;
+  const PICK_MAX_HTML_CHARS = 300;
+
+  function truncate(value, maxChars) {
+    return value.length > maxChars ? value.slice(0, maxChars - 1) + "…" : value;
+  }
+
+  function isPickableElement(element) {
+    return (
+      element instanceof Element &&
+      element !== document.documentElement &&
+      element !== document.body
+    );
+  }
+
+  function resolvePickTarget(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const element = document.elementFromPoint(x, y);
+    return isPickableElement(element) ? element.closest("svg") || element : null;
+  }
+
+  function pickLabel(element) {
+    if (element.id) return element.localName + "#" + element.id;
+    return [element.localName].concat(Array.from(element.classList).slice(0, 2)).join(".");
+  }
+
+  // Only attributes that help find the element in source. data-* values and URL
+  // query strings or fragments can carry tokens.
+  const PICK_ATTRIBUTES = new Set([
+    "id",
+    "class",
+    "name",
+    "type",
+    "role",
+    "alt",
+    "aria-label",
+    "href",
+    "src",
+  ]);
+
+  function pickAttributeValue(attribute) {
+    return attribute.name === "href" || attribute.name === "src"
+      ? attribute.value.split(/[?#]/)[0]
+      : attribute.value;
+  }
+
+  function describePickElement(element) {
+    const chain = [];
+    for (
+      let current = element;
+      isPickableElement(current) && chain.length < PICK_CHAIN_LENGTH;
+      current = current.parentElement
+    ) {
+      chain.unshift(current);
+    }
+    const attributes = Array.from(element.attributes)
+      .filter((attribute) => PICK_ATTRIBUTES.has(attribute.name))
+      .map((attribute) => ` ${attribute.name}="${pickAttributeValue(attribute).replace(/"/g, "&quot;")}"`)
+      .join("");
+    const text = (element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
+    return {
+      chain: chain.map(pickLabel),
+      html: truncate(`<${element.localName}${attributes}>`, PICK_MAX_HTML_CHARS),
+      text: text ? truncate(text, PICK_MAX_TEXT_CHARS) : undefined,
+    };
+  }
+
+  // Hover asks once per frame, and innerText on a large section forces layout,
+  // so only the rect is re-read while the pointer stays on the same element.
+  // Clicks ask for fresh details since the page may have changed the element.
+  let lastPick = null;
+
+  function describePickTarget(element, fresh) {
+    if (fresh || lastPick?.element !== element) {
+      lastPick = { element, details: describePickElement(element) };
+    }
+    const rect = element.getBoundingClientRect();
+    return {
+      rect: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+      ...lastPick.details,
+    };
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      capabilities: PICK_CAPABILITIES,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_PICK") {
+      const element = resolvePickTarget(event.data.x, event.data.y);
+      postToTrustedTop({
+        type: "INLINE_EDIT_PICK_RESULT",
+        seq: event.data.seq,
+        target: element ? describePickTarget(element, event.data.fresh === true) : null,
+      });
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_BY") {
+      const { deltaX, deltaY, deltaMode } = event.data;
+      if (!scrollForwarding || !Number.isFinite(deltaX) || !Number.isFinite(deltaY)) return;
+      if (deltaMode !== 0 && deltaMode !== 1 && deltaMode !== 2) return;
+      const lineHeight =
+        parseFloat(getComputedStyle(document.documentElement).lineHeight) || DEFAULT_LINE_HEIGHT;
+      const scaleX = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerWidth : 1;
+      const scaleY = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerHeight : 1;
+      // The selection overlay receives the wheel event instead of this iframe.
+      // Instant scrolling preserves trackpad deltas even on smooth-scroll sites.
+      window.scrollBy({ left: deltaX * scaleX, top: deltaY * scaleY, behavior: "instant" });
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
